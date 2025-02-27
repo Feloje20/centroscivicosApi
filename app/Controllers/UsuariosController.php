@@ -10,7 +10,7 @@ class UsuariosController {
 
     private $usuarios;
 
-    public function __construct($requestMethod, $usuariosId)
+    public function __construct($requestMethod, $usuariosId, $data = array())
     {
         $this->requestMethod = $requestMethod;
         $this->usuariosId = $usuariosId;
@@ -22,13 +22,11 @@ class UsuariosController {
      * return: Respuesta de la petición
      */
     public function processRequest(){
-        echo (var_dump($this->usuariosId));
         switch ($this->requestMethod) {
             case 'GET':
                 $response = $this->getUsuarios($this->usuariosId);
                 break;
             case 'POST':
-                $input = (array) json_decode(file_get_contents('php://input'), TRUE); 
                 $response = $this->createUsuarios();
                 break;
             case 'PUT':
@@ -47,6 +45,7 @@ class UsuariosController {
         }
     }
 
+    // Método que obtiene la información de un usuario
     private function getUsuarios($id){
         $result = $this->usuarios->get($id);
         if (!$result) {
@@ -57,6 +56,7 @@ class UsuariosController {
         return $response;
     }
 
+    // Método de registro de usuarios
     public function createUsuarios(){
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
         if (!$this->validateUsuarios($input)) {
@@ -68,6 +68,7 @@ class UsuariosController {
         return $response;
     }
 
+    // Método que actualiza la información del usuario
     private function updateUsuarios($id){
         $result = $this->usuarios->get($id);
         if (!$result) {
@@ -83,13 +84,15 @@ class UsuariosController {
         return $response;
     }
 
+    // Método que valida la información recibida del cliente
     private function validateUsuarios($input){
-        if (!isset($input['nombre']) || !isset($input['telefono']) || !isset($input['email'])) {
+        if (!isset($input['usuario']) || !isset($input['password']) || !isset($input['email'])) {
             return false;
         }
         return true;
     }
 
+    // Método que elimina un usuario
     public function deleteUsuarios($id) {
         $result = $this->usuarios->get($id);
         if (!$result) {
@@ -101,6 +104,7 @@ class UsuariosController {
         return $response;
     }
 
+    // Método que devuelve un error 404
     public function notFoundResponse(){
         $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
         $response['body'] = null;

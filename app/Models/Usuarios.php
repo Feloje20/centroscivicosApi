@@ -50,11 +50,23 @@ class Usuarios extends DBAbstractModel{
     }
 
     public function edit($id = '', $data = array()){
-        
+        foreach ($data as $campo => $valor) {
+            $this->$campo = $valor;
+        }
+        $this->query = "UPDATE usuarios SET usuario = :usuario, password = :password, email = :email WHERE id = :id";
+        $this->parametros['id'] = $id;
+        $this->parametros['usuario'] = $this->usuario;
+        $this->parametros['password'] = $this->password;
+        $this->parametros['email'] = $this->email;
+        $this->get_results_from_query();
+        $this->mensaje = "Usuario modificado";
     }
 
     public function delete($id= ''){
-        
+        $this->query = "DELETE FROM usuarios WHERE id = :id";
+        $this->parametros['id'] = $id;
+        $this->get_results_from_query();
+        $this->mensaje = "Usuario eliminado";
     }
 
     // Método de login
