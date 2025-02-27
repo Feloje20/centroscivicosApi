@@ -56,6 +56,37 @@ $router->add(array(
     "section" => "public"
 ));
 
+// ******** ACTIVIDADES **********
+$router->add(array(
+    "name" => "Actividades con posibilidad de filtro",
+    "path" => "/^\/actividades$/",
+    "action" => CentrosController::class,
+    "section" => "public"
+));
+
+$router->add(array(
+    "name" => "Actividades de centro especifico",
+    "path" => "/^\/centros\/([0-9]+)?\/actividades$/",
+    "action" => CentrosController::class,
+    "section" => "public"
+));
+
+// ******** INSTALACIONES **********
+$router->add(array(
+    "name" => "Instalaciones de centro especifico",
+    "path" => "/^\/centros\/([0-9]+)?\/instalaciones$/",
+    "action" => CentrosController::class,
+    "section" => "public"
+));
+
+$router->add(array(
+    "name" => "Instalaciones con posibilidad de filtro",
+    "path" => "/^\/instalaciones$/",
+    "action" => CentrosController::class,
+    "section" => "public"
+));
+
+
 // Buscar la ruta
 $route = $router->match($request_uri);
 if ($route) {

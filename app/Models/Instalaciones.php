@@ -43,10 +43,17 @@ class Instalaciones extends DBAbstractModel{
 
     }
 
-    // Método que devuelve todos los centros
+    // Método que devuelve todas las instalaciones de un centro
     public function getAllByCentroId(){
         $this->query = "SELECT * FROM instalaciones WHERE id_centro = :id_centro";
         $this->parametros['id_centro'] = $this->id_centro;
+        $this->get_results_from_query();
+        return $this->rows;
+    }
+
+    // Método que devuelve todas las instalaciones (NECESITA FILTRO***************)
+    public function getAll(){
+        $this->query = "SELECT * FROM instalaciones";
         $this->get_results_from_query();
         return $this->rows;
     }

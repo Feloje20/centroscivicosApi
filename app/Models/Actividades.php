@@ -46,10 +46,17 @@ class Actividades extends DBAbstractModel{
 
     }
 
-    // Método que devuelve todos los centros
+    // Método que devuelve todas las actividades de un centro
     public function getAllByCentroId(){
         $this->query = "SELECT * FROM actividades WHERE id_centro = :id_centro";
         $this->parametros['id_centro'] = $this->id_centro;
+        $this->get_results_from_query();
+        return $this->rows;
+    }
+
+    // Método que devuelve todas las actividades (NECESITA FILTRO***************)
+    public function getAll(){
+        $this->query = "SELECT * FROM actividades";
         $this->get_results_from_query();
         return $this->rows;
     }

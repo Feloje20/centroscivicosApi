@@ -3,17 +3,23 @@
 namespace App\Controllers;
 
 use App\Models\Centros;
+use App\Models\Instalaciones;
+use App\Models\Actividades;
 
 class CentrosController {
     private $requestMethod;
 
     private $centros;
+    private $instalaciones;
+    private $actividades;
     private $uri;
 
     public function __construct($requestMethod)
     {
         $this->requestMethod = $requestMethod;
         $this->centros = Centros::getInstancia();
+        $this->instalaciones = Instalaciones::getInstancia();
+        $this->actividades = Actividades::getInstancia();
         $this->uri = str_replace(BASE_URL, '', $_SERVER['REQUEST_URI']);
     }
 
@@ -28,8 +34,20 @@ class CentrosController {
         } else {
             // En función de la URI, se ejecuta una función u otra
             switch ($this->uri) {
+                case '/instalaciones':
+                    $response = $this->getAllInstalaciones();
+                    break;
+                case '/actividades':
+                    $response = $this->getAllActividades();
+                    break;
                 case '/centros':
                     $response = $this->getAllCentros();
+                    break;
+                case (preg_match('/\/centros\/\d+\/instalaciones/', $this->uri) ? true : false):
+                    $response = $this->getInstalacionesCentro();
+                    break;
+                case (preg_match('/\/centros\/\d+\/actividades/', $this->uri) ? true : false):
+                    $response = $this->getActividadesCentro();
                     break;
                 case (preg_match('/\/centros\/\d+/', $this->uri) ? true : false):
                     $response = $this->getCentro();
@@ -62,6 +80,48 @@ class CentrosController {
         if (!$result) {
             return $this->notFoundResponse();
         }
+        $response['status_code_header'] = 'HTTP/1.1 200 OK';
+        $response['body'] = json_encode($result);
+        return $response;
+    }
+
+    // Método que devuelve todas las instalaciones de un centro
+    private function getInstalacionesCentro(){
+        $id = explode('/', $this->uri)[2];
+        $this->centros->setId($id);
+        $result = $this->centros->get();
+        if (!$result) {
+            return $this->notFoundResponse();
+        }
+        $response['status_code_header'] = 'HTTP/1.1 200 OK';
+        $response['body'] = json_encode($result['instalaciones']);
+        return $response;
+    }
+
+    // Método que devuelve todas las actividades de un centro
+    private function getActividadesCentro(){
+        $id = explode('/', $this->uri)[2];
+        $this->centros->setId($id);
+        $result = $this->centros->get();
+        if (!$result) {
+            return $this->notFoundResponse();
+        }
+        $response['status_code_header'] = 'HTTP/1.1 200 OK';
+        $response['body'] = json_encode($result['actividades']);
+        return $response;
+    }
+
+    // Método que devuelve todas las instalaciones (NECESITA FILTRO***************)
+    private function getAllInstalaciones(){
+        $result = $this->instalaciones->getAll();
+        $response['status_code_header'] = 'HTTP/1.1 200 OK';
+        $response['body'] = json_encode($result);
+        return $response;
+    }
+
+    // Método que devuelve todas las actividades (NECESITA FILTRO***************)
+    private function getAllActividades(){
+        $result = $this->actividades->getAll();
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = json_encode($result);
         return $response;
