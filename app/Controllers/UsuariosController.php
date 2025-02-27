@@ -2,19 +2,19 @@
 
 namespace App\Controllers;
 
-use App\Models\Contactos;
+use App\Models\Usuarios;
 
-class ContactosController {
+class UsuariosController {
     private $requestMethod;
-    private $contactosId;
+    private $usuariosId;
 
-    private $contactos;
+    private $usuarios;
 
-    public function __construct($requestMethod, $contactosId)
+    public function __construct($requestMethod, $usuariosId)
     {
         $this->requestMethod = $requestMethod;
-        $this->contactosId = $contactosId;
-        $this->contactos = Contactos::getInstancia();
+        $this->usuariosId = $usuariosId;
+        $this->usuarios = Usuarios::getInstancia();
     }
 
     /**
@@ -22,19 +22,20 @@ class ContactosController {
      * return: Respuesta de la petición
      */
     public function processRequest(){
+        echo (var_dump($this->usuariosId));
         switch ($this->requestMethod) {
             case 'GET':
-                $response = $this->getContactos($this->contactosId);
+                $response = $this->getUsuarios($this->usuariosId);
                 break;
             case 'POST':
-                // $input = (array) json_decode(file_get_contents('php://input'), TRUE); 
-                $response = $this->createContactos();
+                $input = (array) json_decode(file_get_contents('php://input'), TRUE); 
+                $response = $this->createUsuarios();
                 break;
             case 'PUT':
-                $response = $this->updateContactos($this->contactosId);
+                $response = $this->updateUsuarios($this->usuariosId);
                 break;
             case 'DELETE':
-                $response = $this->deleteContactos($this->contactosId);
+                $response = $this->deleteUsuarios($this->usuariosId);
                 break;
             default:
                 $response = $this->notFoundResponse();
@@ -46,8 +47,8 @@ class ContactosController {
         }
     }
 
-    private function getContactos($id){
-        $result = $this->contactos->get($id);
+    private function getUsuarios($id){
+        $result = $this->usuarios->get($id);
         if (!$result) {
             return $this->notFoundResponse();
         }
@@ -56,45 +57,45 @@ class ContactosController {
         return $response;
     }
 
-    public function createContactos(){
+    public function createUsuarios(){
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-        if (!$this->validateContactos($input)) {
+        if (!$this->validateUsuarios($input)) {
             return $this->notFoundResponse();
         }
-        $this->contactos->set($input);
+        $this->usuarios->set($input);
         $response['status_code_header'] = 'HTTP/1.1 201 Created';
         $response['body'] = null;
         return $response;
     }
 
-    private function updateContactos($id){
-        $result = $this->contactos->get($id);
+    private function updateUsuarios($id){
+        $result = $this->usuarios->get($id);
         if (!$result) {
             return $this->notFoundResponse();
         }
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-        if (!$this->validateContactos($input)) {
+        if (!$this->validateUsuarios($input)) {
             return $this->notFoundResponse();
         }
-        $this->contactos->edit($id, $input);
+        $this->usuarios->edit($id, $input);
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = null;
         return $response;
     }
 
-    private function validateContactos($input){
+    private function validateUsuarios($input){
         if (!isset($input['nombre']) || !isset($input['telefono']) || !isset($input['email'])) {
             return false;
         }
         return true;
     }
 
-    public function deleteContactos($id) {
-        $result = $this->contactos->get($id);
+    public function deleteUsuarios($id) {
+        $result = $this->usuarios->get($id);
         if (!$result) {
             return $this->notFoundResponse();
         }
-        $this->contactos->delete($id);
+        $this->usuarios->delete($id);
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = null;
         return $response;

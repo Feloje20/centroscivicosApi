@@ -3,7 +3,12 @@ namespace App\Models;
 
 class Usuarios extends DBAbstractModel{
     private static $instancia;
+    private $id;
+    private $usuario;
+    private $password;
+    private $email;
 
+    // Modelo singleton
     public static function getInstancia()
     {
         if (!isset(self::$instancia)) {
@@ -14,7 +19,17 @@ class Usuarios extends DBAbstractModel{
     }
 
     public function set($data = array()){
+        foreach ($data as $campo => $valor) {
+            $this->$campo = $valor;
+        }
 
+        $this->query = "INSERT INTO usuarios (usuario, password, email) 
+                VALUES (:usuario, :password, :email)";
+        $this->parametros['usuario'] = $this->usuario;
+        $this->parametros['password'] = $this->password;
+        $this->parametros['email'] = $this->email;
+        $this->get_results_from_query();
+        $this->mensaje = "Usuario agregado";
     }
 
     public function get($id = ''){

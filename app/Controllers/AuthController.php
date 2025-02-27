@@ -31,7 +31,7 @@ class AuthController {
         $usuario = $input['usuario'];
         $password = $input['password'];
         $dataUser = $this->users->login($usuario, $password);
-
+        echo var_dump($dataUser);
         if ($dataUser) {
             $key = KEY;
             // Emisor del token
@@ -42,6 +42,7 @@ class AuthController {
             $notbefore_claim = time();
             $expire_claim = $issuedat_claim + 3600;
 
+            // Información del token
             $token = array(
                 "iss" => $issuer_claim,
                 "aud" => $audience_claim,
@@ -49,10 +50,12 @@ class AuthController {
                 "nbf" => $notbefore_claim,
                 "exp" => $expire_claim,
                 "data" => array(
-                    "usuario" => $usuario
+                    "usuario" => $usuario,
+                    "userId" => $dataUser['id']
                 )
             );
 
+            // Generamos el token JWT
             $jwt = JWT::encode($token, $key, 'HS256'); //Genera el token JWT
             $res = json_encode (
                 array(
