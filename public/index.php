@@ -46,7 +46,14 @@ $router->add(array(
     "name" => "centros",
     "path" => "/^\/centros$/",
     "action" => CentrosController::class,
-    "section" => "private"
+    "section" => "public"
+));
+
+$router->add(array(
+    "name" => "Centro especifico",
+    "path" => "/^\/centros\/([0-9]+)?$/",
+    "action" => CentrosController::class,
+    "section" => "public"
 ));
 
 // Buscar la ruta
@@ -83,6 +90,11 @@ if ($route) {
                 ]);
                 exit(http_response_code(401));
             }
+        } else {
+            echo json_encode([
+                "message" => "Access denied."
+            ]);
+            exit(http_response_code(401));
         }
         $controller = new $controllerName($request_method, $userId);
     } else {
