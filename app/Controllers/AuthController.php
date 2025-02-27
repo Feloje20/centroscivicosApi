@@ -5,6 +5,7 @@ namespace App\Controllers;
 use \App\Models\Usuarios;
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
+use \Exception;
 
 class AuthController {
     private $requestMethod;
@@ -50,7 +51,8 @@ class AuthController {
                 "exp" => $expire_claim,
                 "data" => array(
                     "usuario" => $usuario,
-                    "userId" => $dataUser['id']
+                    "userId" => $dataUser['id'],
+                    "email" => $dataUser['email']
                 )
             );
 
@@ -77,4 +79,52 @@ class AuthController {
             echo $response['body']; // Envía el cuerpo de la respuesta
         }        
     }
+
+    public function refreshToken()
+{
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+    if (!$authHeader) {
+        http_response_code(401);
+        echo json_encode(["message" => "No token provided"]);
+        exit();
+    }
+
+    // Extraer el token
+    $jwt = explode(" ", $authHeader)[1] ?? null;
+    if (!$jwt) {
+        http_response_code(401);
+        echo json_encode(["message" => "Token format invalid"]);
+        exit();
+    }
+
+    try {
+        $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
+        $userId = $decoded->data->userId;
+        $usuario = $decoded->data->usuario;
+        $userEmail = $decoded->data->email;
+
+        // Generar un nuevo token con nueva expiración
+        $issuedAt = time();
+        $expireAt = $issuedAt + 3600; // Nuevo token válido por 1 hora
+
+        $newToken = JWT::encode([
+            "iss" => "http://apirestcontactos.local/",
+            "iat" => $issuedAt,
+            "exp" => $expireAt,
+            "data" => [
+                "userId" => $userId,
+                "usuario" => $usuario,
+                "email" => $userEmail
+            ]
+        ], KEY, 'HS256');
+
+        echo json_encode([
+            "jwt" => $newToken,
+            "expireAt" => $expireAt
+        ]);
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(["message" => "Invalid token", "error" => $e->getMessage()]);
+    }
+}
 }

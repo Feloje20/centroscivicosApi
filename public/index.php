@@ -41,6 +41,20 @@ $router->add(array(
     "section" => "public"
 ));
 
+$router->add(array(
+    "name" => "Registro de usuario",
+    "path" => "/^\/register$/",
+    "action" => UsuariosController::class,
+    "section" => "public"
+));
+
+$router->add(array(
+    "name" => "Refrescar token",
+    "path" => "/^\/token\/refresh$/",
+    "action" => UsuariosController::class,
+    "section" => "public"
+));
+
 // ******** CENTROS CIVICOS **********
 $router->add(array(
     "name" => "centros",
@@ -86,6 +100,39 @@ $router->add(array(
     "section" => "public"
 ));
 
+// ******** RESERVAS **********
+
+$router->add(array(
+    "name" => "Reservas de usuario",
+    "path" => "/^\/reservas$/",
+    "action" => UsuariosController::class,
+    "section" => "private"
+));
+
+$router->add(array(
+    "name" => "Eliminar",
+    "path" => "/^\/reservas\/([0-9]+)?$/",
+    "action" => UsuariosController::class,
+    "section" => "private"
+));
+
+// ********** Inscripciones **********
+$router->add(array(
+    "name" => "Reservas de usuario",
+    "path" => "/^\/inscripciones$/",
+    "action" => UsuariosController::class,
+    "section" => "private"
+));
+
+$router->add(array(
+    "name" => "Eliminar",
+    "path" => "/^\/inscripciones\/([0-9]+)?$/",
+    "action" => UsuariosController::class,
+    "section" => "private"
+));
+
+// ********** FIN DE RUTAS **********
+
 
 // Buscar la ruta
 $route = $router->match($request_uri);
@@ -112,8 +159,6 @@ if ($route) {
             try {
                 $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
 
-                // Obtenemos la ID del usuarios en la decodificación del token
-                $userId = $decoded->data->userId;
             } catch (Exception $e) {
                 echo json_encode([
                     "message" => "Access denied.",
@@ -127,7 +172,7 @@ if ($route) {
             ]);
             exit(http_response_code(401));
         }
-        $controller = new $controllerName($request_method, $userId);
+        $controller = new $controllerName($request_method, $jwt);
     } else {
         $controller = new $controllerName($request_method);
     }
