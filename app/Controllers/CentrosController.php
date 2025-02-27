@@ -2,17 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Models\Usuarios;
-use App\Controllers\AuthController;
-
-class UsuariosController {
+class CentrosController {
     private $requestMethod;
     private $usuariosId;
 
     private $usuarios;
     private $uri;
 
-    public function __construct($requestMethod, $usuariosId = null)
+    public function __construct($requestMethod)
     {
         $this->requestMethod = $requestMethod;
         $this->usuariosId = $usuariosId;

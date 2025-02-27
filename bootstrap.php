@@ -12,8 +12,7 @@ define("DBPASS", $_ENV['DBPASS']);
 define("DBNAME", $_ENV['DBNAME']);
 define("DBPORT", $_ENV['DBPORT']);
 define("KEY", $_ENV['KEY']);
-
-// define("BASE_URL", "http://portfolio.local");
+define("BASE_URL", "http://centroscivicos.local/");
 
 ini_set("display_errors", 1);
 ini_Set("display_startup_errors", 1);

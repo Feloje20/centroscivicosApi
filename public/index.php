@@ -2,10 +2,9 @@
 require "../bootstrap.php";
 require_once "../vendor/autoload.php";
 
-use App\Models\Contactos;
 use App\Core\Router;
 use App\Controllers\UsuariosController;
-use App\Controllers\AuthController;
+use App\Controllers\CentrosController;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -25,63 +24,70 @@ if ($request_method == "OPTIONS") {
 
 $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// Proceso de login
-if ($request_uri == '/login') {
-    $auth = new AuthController($request_method);
-    if (!$auth->loginFromRequest()) {
-        exit(http_response_code(401));
-    }
-}
-
-// Obtener input JSON (si existe)
-$input = json_decode(file_get_contents('php://input'), true) ?? [];
-
-// Obtener cabecera de autorización
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-
-// Validar si hay token antes de intentar procesarlo
-$jwt = null;
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    if (count($arr) == 2) {
-        $jwt = $arr[1];
-    }
-}
-
-// Validar JWT
-
-if ($jwt) {
-    try {
-        $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
-
-        // Obtenemos la ID del usuarios en la decodificación del token
-        $userId = $decoded->data->userId;
-    } catch (Exception $e) {
-        echo json_encode([
-            "message" => "Access denied.",
-            "error" => $e->getMessage()
-        ]);
-        exit(http_response_code(401));
-    }
-} else {
-    echo json_encode(["message" => "No authorization token provided."]);
-    exit(http_response_code(401));
-} 
-
 // Configuración de rutas
 $router = new Router();
 // ******** USUARIOS **********
 $router->add(array(
-    "name" => "home",
+    "name" => "usuarios",
     "path" => "/^\/user$/",
-    "action" => UsuariosController::class
+    "action" => UsuariosController::class,
+    "section" => "private"
+));
+
+$router->add(array(
+    "name" => "login",
+    "path" => "/^\/login$/",
+    "action" => UsuariosController::class,
+    "section" => "public"
+));
+
+// ******** CENTROS CIVICOS **********
+$router->add(array(
+    "name" => "centros",
+    "path" => "/^\/centros$/",
+    "action" => CentrosController::class,
+    "section" => "private"
 ));
 
 // Buscar la ruta
 $route = $router->match($request_uri);
 if ($route) {
     $controllerName = $route['action'];
-    $controller = new $controllerName($request_method, $userId);
+    // Si la ruta es privada, se pasa el userId
+    if ($route['section'] == "private") {
+        // Solo validamos el token si la función de la API es privada
+
+        // Obtener cabecera de autorización
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+
+        // Validar si hay token antes de intentar procesarlo
+        $jwt = null;
+        if ($authHeader) {
+            $arr = explode(" ", $authHeader);
+            if (count($arr) == 2) {
+                $jwt = $arr[1];
+            }
+        }
+
+        // Validar JWT
+        if ($jwt) {
+            try {
+                $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
+
+                // Obtenemos la ID del usuarios en la decodificación del token
+                $userId = $decoded->data->userId;
+            } catch (Exception $e) {
+                echo json_encode([
+                    "message" => "Access denied.",
+                    "error" => $e->getMessage()
+                ]);
+                exit(http_response_code(401));
+            }
+        }
+        $controller = new $controllerName($request_method, $userId);
+    } else {
+        $controller = new $controllerName($request_method);
+    }
     $controller->processRequest();
 } else {
     http_response_code(404);

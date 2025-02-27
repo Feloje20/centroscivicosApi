@@ -31,7 +31,6 @@ class AuthController {
         $usuario = $input['usuario'];
         $password = $input['password'];
         $dataUser = $this->users->login($usuario, $password);
-        echo var_dump($dataUser);
         if ($dataUser) {
             $key = KEY;
             // Emisor del token
