@@ -70,9 +70,9 @@ class Usuarios extends DBAbstractModel{
     }
 
     // Método de login
-    public function login($usuario, $password){
-        $this->query = "SELECT * FROM usuarios WHERE usuario = :usuario AND password = :password";
-        $this->parametros['usuario'] = $usuario;
+    public function login($email, $password){
+        $this->query = "SELECT * FROM usuarios WHERE email = :email AND password = :password";
+        $this->parametros['email'] = $email;
         $this->parametros['password'] = $password;
         $this->get_results_from_query();
         if (count($this->rows) == 1) {

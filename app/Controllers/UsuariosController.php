@@ -85,9 +85,7 @@ class UsuariosController {
     // Método de login
     private function loginFromRequest(){
         $auth = new AuthController($this->requestMethod);
-        $auth->loginFromRequest();
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = json_encode($auth);
+        $response = $auth->loginFromRequest();
         return $response;
     }
 

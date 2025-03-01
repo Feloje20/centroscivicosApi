@@ -29,9 +29,9 @@ class AuthController {
             exit();
         }   
         
-        $usuario = $input['usuario'];
+        $email = $input['email'];
         $password = $input['password'];
-        $dataUser = $this->users->login($usuario, $password);
+        $dataUser = $this->users->login($email, $password);
         if ($dataUser) {
             $key = KEY;
             // Emisor del token
@@ -50,9 +50,9 @@ class AuthController {
                 "nbf" => $notbefore_claim,
                 "exp" => $expire_claim,
                 "data" => array(
-                    "usuario" => $usuario,
+                    "email" => $email,
                     "userId" => $dataUser['id'],
-                    "email" => $dataUser['email']
+                    "usuario" => $dataUser['usuario']
                 )
             );
 
@@ -60,13 +60,12 @@ class AuthController {
             $jwt = JWT::encode($token, $key, 'HS256'); //Genera el token JWT
             $res = json_encode (
                 array(
-                    "message " => "Succesful login.",
+                    "message" => "Succesful login.",
                     "jwt" => $jwt,
-                    "usuario" => $usuario,
+                    "email" => $email,
                     "expireAt" => $expire_claim
                 )
             );
-
             $response['status_code_header'] = "HTTP/1.1 201 Created";
             $response['body'] = $res; // Cuerpo con la respuesta con el token
         } else {
@@ -74,57 +73,54 @@ class AuthController {
             $response['body'] = null;
         }
 
-        header($response['status_code_header']);  // Envía el encabezado de la respuesta
-        if ($response['body']) {
-            echo $response['body']; // Envía el cuerpo de la respuesta
-        }        
+        return $response;  
     }
 
     public function refreshToken()
-{
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-    if (!$authHeader) {
-        http_response_code(401);
-        echo json_encode(["message" => "No token provided"]);
-        exit();
+    {
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+        if (!$authHeader) {
+            http_response_code(401);
+            echo json_encode(["message" => "No token provided"]);
+            exit();
+        }
+
+        // Extraer el token
+        $jwt = explode(" ", $authHeader)[1] ?? null;
+        if (!$jwt) {
+            http_response_code(401);
+            echo json_encode(["message" => "Token format invalid"]);
+            exit();
+        }
+
+        try {
+            $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
+            $userId = $decoded->data->userId;
+            $usuario = $decoded->data->usuario;
+            $userEmail = $decoded->data->email;
+
+            // Generar un nuevo token con nueva expiración
+            $issuedAt = time();
+            $expireAt = $issuedAt + 3600; // Nuevo token válido por 1 hora
+
+            $newToken = JWT::encode([
+                "iss" => "http://apirestcontactos.local/",
+                "iat" => $issuedAt,
+                "exp" => $expireAt,
+                "data" => [
+                    "userId" => $userId,
+                    "usuario" => $usuario,
+                    "email" => $userEmail
+                ]
+            ], KEY, 'HS256');
+
+            echo json_encode([
+                "jwt" => $newToken,
+                "expireAt" => $expireAt
+            ]);
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(["message" => "Invalid token", "error" => $e->getMessage()]);
+        }
     }
-
-    // Extraer el token
-    $jwt = explode(" ", $authHeader)[1] ?? null;
-    if (!$jwt) {
-        http_response_code(401);
-        echo json_encode(["message" => "Token format invalid"]);
-        exit();
-    }
-
-    try {
-        $decoded = JWT::decode($jwt, new Key(KEY, 'HS256'));
-        $userId = $decoded->data->userId;
-        $usuario = $decoded->data->usuario;
-        $userEmail = $decoded->data->email;
-
-        // Generar un nuevo token con nueva expiración
-        $issuedAt = time();
-        $expireAt = $issuedAt + 3600; // Nuevo token válido por 1 hora
-
-        $newToken = JWT::encode([
-            "iss" => "http://apirestcontactos.local/",
-            "iat" => $issuedAt,
-            "exp" => $expireAt,
-            "data" => [
-                "userId" => $userId,
-                "usuario" => $usuario,
-                "email" => $userEmail
-            ]
-        ], KEY, 'HS256');
-
-        echo json_encode([
-            "jwt" => $newToken,
-            "expireAt" => $expireAt
-        ]);
-    } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(["message" => "Invalid token", "error" => $e->getMessage()]);
-    }
-}
 }
