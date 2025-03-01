@@ -92,9 +92,7 @@ class UsuariosController {
     // Método de refresco de token
     private function refreshToken(){
         $auth = new AuthController($this->requestMethod);
-        $auth->refreshToken();
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = json_encode($auth);
+        $response = $auth->refreshToken();
         return $response;
     }
 
@@ -161,14 +159,20 @@ class UsuariosController {
     // Método para crear una reserva
     public function createReservas(){
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
+    
+        // Validar los datos de la reserva
         if (!$this->validateReservas($input)) {
-            return $this->notFoundResponse();
+            return $this->notFoundResponse();  // Respuesta con error de validación
         }
+    
         $reservas = Reservas::getInstancia();
         $reservas->setCorreo($this->userEmail);
         $reservas->set($input);
-        $response['status_code_header'] = 'HTTP/1.1 200 OK';
-        $response['body'] = null;
+    
+        // Respuesta de éxito con un cuerpo JSON
+        $response['status_code_header'] = 'HTTP/1.1 201 Created';  // Cambio de 200 a 201 para crear un nuevo recurso
+        $response['body'] = json_encode(['message' => 'Reserva creada con éxito']);  // Mensaje de éxito
+    
         return $response;
     }
 

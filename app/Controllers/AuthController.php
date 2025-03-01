@@ -81,16 +81,18 @@ class AuthController {
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
         if (!$authHeader) {
             http_response_code(401);
-            echo json_encode(["message" => "No token provided"]);
-            exit();
+            $response['status_code_header'] = "HTTP/1.1 401 Unauthorized";
+            $response['body'] = json_encode(["message" => "No token provided"]);
+            return $response;
         }
 
         // Extraer el token
         $jwt = explode(" ", $authHeader)[1] ?? null;
         if (!$jwt) {
             http_response_code(401);
-            echo json_encode(["message" => "Token format invalid"]);
-            exit();
+            $response['status_code_header'] = "HTTP/1.1 401 Unauthorized";
+            $response['body'] = json_encode(["message" => "Token format invalid"]);
+            return $response;
         }
 
         try {
@@ -114,13 +116,18 @@ class AuthController {
                 ]
             ], KEY, 'HS256');
 
-            echo json_encode([
+            $response['status_code_header'] = "HTTP/1.1 201 Created";
+            $response['body'] = json_encode([
+                "message" => "Token refreshed",
                 "jwt" => $newToken,
                 "expireAt" => $expireAt
             ]);
         } catch (Exception $e) {
             http_response_code(401);
-            echo json_encode(["message" => "Invalid token", "error" => $e->getMessage()]);
+            $response['status_code_header'] = "HTTP/1.1 401 Unauthorized";
+            $response['body'] = json_encode(["message" => "Invalid token", "error" => $e->getMessage()]);
         }
+
+        return $response;
     }
 }
