@@ -1,5 +1,7 @@
 <?php
 namespace App\Models;
+use App\Models\Instalaciones;
+use App\Models\Centros;
 
 class Reservas extends DBAbstractModel{
     private static $instancia;
@@ -67,6 +69,42 @@ class Reservas extends DBAbstractModel{
         $this->query = "SELECT * FROM reservas WHERE correo = :correo";
         $this->parametros['correo'] = $email;
         $this->get_results_from_query();
+    
+        // Instancias de las clases de Instalación y Centro
+        $instalacion = Instalaciones::getInstancia();
+        $centro = Centros::getInstancia();
+    
+        foreach ($this->rows as &$reserva) {
+            // Obtener los datos de la instalación
+            $instalacion->setId($reserva['id_instalacion']);
+            $instalacionDatos = $instalacion->get();  // Esto debería devolver un único valor o null
+    
+            if ($instalacionDatos) {
+                // Asignar la instalación a la reserva
+                $reserva['instalacion'] = $instalacionDatos;
+                // Verificar si existe un 'id_centro' y obtener los datos del centro
+                if (isset($reserva['instalacion'][0]['id_centro'])) {
+                    $centro->setId($reserva['instalacion'][0]['id_centro']);
+                    
+                    $centroDatos = $centro->getCentro();  // Suponiendo que 'getCentro' devuelve un solo objeto de centro
+    
+                    if ($centroDatos) {
+                        // Asignar los datos del centro a la instalación
+                        $reserva['instalacion'][0]['centro'] = $centroDatos;
+                    } else {
+                        // Si no se encuentra el centro, asignar un valor por defecto o manejarlo
+                        $reserva['instalacion'][0]['centro'] = null;
+                    }
+                } else {
+                    // Si no hay 'id_centro', asignamos null
+                    $reserva['instalacion']['centro'] = null;
+                }
+            } else {
+                // Si no se encuentra la instalación, asignar null
+                $reserva['instalacion'] = null;
+            }
+        }
+    
         return $this->rows;
     }
 }

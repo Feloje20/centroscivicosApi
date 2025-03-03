@@ -61,10 +61,48 @@ class Inscripciones extends DBAbstractModel{
     }
 
     // Método que devuelve todas las rservas de un usuario
+    // public function getAllByUserEmail($email){
+    //     $this->query = "SELECT * FROM inscripciones WHERE correo = :correo";
+    //     $this->parametros['correo'] = $email;
+    //     $this->get_results_from_query();
+    //     return $this->rows;
+    // }
+
+    // Método que devuelve todas las rservas de un usuario
     public function getAllByUserEmail($email){
         $this->query = "SELECT * FROM inscripciones WHERE correo = :correo";
         $this->parametros['correo'] = $email;
         $this->get_results_from_query();
+    
+        // Instancias de las clases de Actividad
+        $actividad = Actividades::getInstancia();
+    
+        foreach ($this->rows as &$inscripcion) {
+            // Obtener los datos de la actividad
+            $actividad->setId($inscripcion['id_actividad']);
+            $actividadDatos = $actividad->get();  // Esto debería devolver un único valor o null
+    
+            if ($actividadDatos) {
+                // Asignar la actividad a la inscripción
+                $inscripcion['actividad'] = $actividadDatos;
+                // Obtener los datos del centro
+                $centro = Centros::getInstancia();
+                $centro->setId($actividadDatos[0]['id_centro']);
+                $centroDatos = $centro->getCentro();  // Esto debería devolver un único valor o null
+
+                if ($centroDatos) {
+                    // Asignar el centro a la actividad
+                    $inscripcion['actividad'][0]['centro'] = $centroDatos;
+                } else {
+                    // Si no se encuentra el centro, asignar null
+                    $inscripcion['actividad'][0]['centro'] = null;
+                }
+            } else {
+                // Si no se encuentra la actividad, asignar null
+                $inscripcion['actividad'] = null;
+            }
+        }
+    
         return $this->rows;
     }
 }

@@ -32,7 +32,10 @@ class Instalaciones extends DBAbstractModel{
     }
 
     public function get(){
-
+        $this->query = "SELECT * FROM instalaciones WHERE id = :id";
+        $this->parametros['id'] = $this->id;
+        $this->get_results_from_query();
+        return $this->rows;
     }
 
     public function edit($id = '', $data = array()){

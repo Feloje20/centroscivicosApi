@@ -74,4 +74,12 @@ class Centros extends DBAbstractModel{
         $this->get_results_from_query();
         return $this->rows;
     }
+
+    // Datos de un centro especifico, solo el centro
+    public function getCentro(){
+        $this->query = "SELECT * FROM centros_civicos WHERE id = :id";
+        $this->parametros['id'] = $this->id;
+        $this->get_results_from_query();
+        return $this->rows;
+    }
 }
