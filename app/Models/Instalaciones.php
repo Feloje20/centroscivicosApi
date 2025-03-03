@@ -55,8 +55,12 @@ class Instalaciones extends DBAbstractModel{
     }
 
     // Método que devuelve todas las instalaciones (NECESITA FILTRO***************)
-    public function getAll(){
+    public function getAll($searchQuery = ''){
         $this->query = "SELECT * FROM instalaciones";
+        if (!empty($searchQuery)) {
+            $this->query = "SELECT * FROM instalaciones WHERE nombre LIKE :searchQuery OR descripcion LIKE :searchQuery";
+            $this->parametros['searchQuery'] = '%' . $searchQuery . '%';
+        }
         $this->get_results_from_query();
         return $this->rows;
     }

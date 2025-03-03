@@ -57,9 +57,13 @@ class Actividades extends DBAbstractModel{
         return $this->rows;
     }
 
-    // Método que devuelve todas las actividades (NECESITA FILTRO***************)
-    public function getAll(){
+    // Método que devuelve todas las actividades (con filtro)
+    public function getAll($searchQuery = ''){
         $this->query = "SELECT * FROM actividades";
+        if (!empty($searchQuery)) {
+            $this->query .= " WHERE nombre LIKE :searchQuery OR descripcion LIKE :searchQuery";
+            $this->parametros['searchQuery'] = '%' . $searchQuery . '%';
+        }
         $this->get_results_from_query();
         return $this->rows;
     }

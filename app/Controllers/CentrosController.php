@@ -111,17 +111,29 @@ class CentrosController {
         return $response;
     }
 
-    // Método que devuelve todas las instalaciones (NECESITA FILTRO***************)
+    // Método que devuelve todas las instalaciones (con filtro)
     private function getAllInstalaciones(){
-        $result = $this->instalaciones->getAll();
+        // Obtener el parámetro de búsqueda de la URL
+        $searchQuery = isset($_GET['query']) ? $_GET['query'] : '';
+
+        // Filtrar instalaciones si el parámetro 'query' está presente
+        $result = $this->instalaciones->getAll($searchQuery);
+        
+        // Devolver la respuesta
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = json_encode($result);
         return $response;
     }
 
-    // Método que devuelve todas las actividades (NECESITA FILTRO***************)
+    // Método que devuelve todas las actividades (con filtro)
     private function getAllActividades(){
-        $result = $this->actividades->getAll();
+        // Obtener el parámetro de búsqueda de la URL
+        $searchQuery = isset($_GET['query']) ? $_GET['query'] : '';
+
+        // Filtrar actividades si el parámetro 'query' está presente
+        $result = $this->actividades->getAll($searchQuery);
+        
+        // Devolver la respuesta
         $response['status_code_header'] = 'HTTP/1.1 200 OK';
         $response['body'] = json_encode($result);
         return $response;
